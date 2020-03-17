@@ -40,22 +40,16 @@ func NewCacherConfig(config ConfigCacher) *Cacher {
 
 // NewCacher --
 func NewCacher(network string, address string, maxActive int, maxIdle int, idleTimeout time.Duration, expires int) *Cacher {
+	redisPool := NewRedisPool(network, address, maxActive, maxIdle, idleTimeout)
+
 	if expires < 10 {
 		expires = 10
 	}
 
 	return &Cacher{
-		redisPool: &redis.Pool{
-			MaxIdle:     maxIdle,
-			MaxActive:   maxActive,
-			IdleTimeout: idleTimeout * time.Second,
-			Wait:        true,
-			Dial: func() (redis.Conn, error) {
-				return redis.Dial(network, address)
-			},
-		},
-		expires: expires,
-		name:    "redis",
+		redisPool: redisPool,
+		expires:   expires,
+		name:      "redis",
 	}
 }
 
@@ -114,9 +108,9 @@ func (cacher *Cacher) SetEx(key string, value interface{}, ex int) error {
 		if err != nil {
 			return err
 		}
-		_, err = redisConn.Do("set", key, jsonValue, "ex", ex)
+		_, err = redisConn.Do("SET", key, jsonValue, "EX", ex)
 	default:
-		_, err = redisConn.Do("set", key, value, "ex", ex)
+		_, err = redisConn.Do("SET", key, value, "EX", ex)
 	}
 	return err
 }
@@ -135,7 +129,7 @@ func (cacher *Cacher) Get(key string) (interface{}, error) {
 	defer redisConn.Close()
 
 	key = cacher.KeyPrefix() + key
-	return redisConn.Do("get", key)
+	return redisConn.Do("GET", key)
 }
 
 // Del --
@@ -146,7 +140,7 @@ func (cacher *Cacher) Del(key string) error {
 	}
 	defer redisConn.Close()
 
-	_, err := redisConn.Do("del", key)
+	_, err := redisConn.Do("DEL", key)
 	return err
 }
 

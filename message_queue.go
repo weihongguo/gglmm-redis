@@ -38,18 +38,16 @@ func NewMessageQueueConfig(config ConfigMessageQueue, channel string) *MessageQu
 
 // NewMessageQueue --
 func NewMessageQueue(network string, address string, maxActive int, maxIdle int, idleTimeout time.Duration, channel string) *MessageQueue {
+	redisPool := NewRedisPool(network, address, maxActive, maxIdle, idleTimeout)
+
+	if err := Ping(redisPool); err != nil {
+		log.Fatal(err)
+	}
+
 	return &MessageQueue{
-		redisPool: &redis.Pool{
-			MaxIdle:     maxIdle,
-			MaxActive:   maxActive,
-			IdleTimeout: idleTimeout * time.Second,
-			Wait:        true,
-			Dial: func() (redis.Conn, error) {
-				return redis.Dial(network, address)
-			},
-		},
-		channel: channel,
-		name:    "redis",
+		redisPool: redisPool,
+		channel:   channel,
+		name:      "redis",
 	}
 }
 
@@ -80,7 +78,7 @@ func (mq *MessageQueue) Push(message []byte) error {
 	}
 	defer redisConn.Close()
 
-	_, err := redisConn.Do("lpush", mq.channel, message)
+	_, err := redisConn.Do("LPUSH", mq.channel, message)
 	return err
 }
 
@@ -103,7 +101,7 @@ func (mq *MessageQueue) BPop(handler func(message []byte, err error), timeout in
 				log.Printf("[%s] message queue stop!\n", mq.channel)
 				return
 			}
-			reply, err := redisConn.Do("brpop", mq.channel, timeout)
+			reply, err := redisConn.Do("BRPOP", mq.channel, timeout)
 			if err != nil {
 				handler(nil, err)
 			} else {
@@ -123,6 +121,7 @@ func (mq *MessageQueue) BPop(handler func(message []byte, err error), timeout in
 
 	stopChan := make(chan interface{})
 	go func() {
+		defer close(stopChan)
 		<-stopChan
 		log.Printf("[%s] message queue will stop!\n", mq.channel)
 		stop = true

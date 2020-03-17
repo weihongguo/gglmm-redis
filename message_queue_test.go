@@ -19,7 +19,8 @@ func TestMessageQueue(t *testing.T) {
 		mq.Push([]byte(fmt.Sprintf("%dtest", i)))
 	}
 
-	go handlerMessage(mq, 5)
+	go handlerMessage(mq, 5, "handler1")
+	go handlerMessage(mq, 5, "handler2")
 
 	for i := 0; i < sendCount; i++ {
 		t := time.NewTimer(time.Second * 1)
@@ -30,18 +31,16 @@ func TestMessageQueue(t *testing.T) {
 	}
 
 	stop <- 1
-
-	close(stop)
 }
 
-func handlerMessage(mq *MessageQueue, timeout int) {
+func handlerMessage(mq *MessageQueue, timeout int, info string) {
 	var err error
 	stop, err = mq.BPop(func(message []byte, err error) {
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		log.Println(string(message))
+		log.Println(info + ": " + string(message))
 	}, timeout)
 	if err != nil {
 		log.Fatal(err)

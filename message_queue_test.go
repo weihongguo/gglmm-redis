@@ -10,7 +10,7 @@ import (
 var stop chan<- interface{}
 
 func TestMessageQueue(t *testing.T) {
-	mq := NewMessageQueue("tcp", "127.0.0.1:6379", 5, 10, 3, "test")
+	mq := NewMessageQueue("tcp", "127.0.0.1:6379", 5, 10, 3, "message-queue-test")
 	defer mq.Close()
 
 	sendCount := 5

@@ -15,7 +15,7 @@ type Cacher struct {
 	redisPool *redis.Pool
 	expires   int
 	keyPrefix string
-	name      string
+	info      string
 }
 
 // NewCacherConfig --
@@ -49,7 +49,7 @@ func NewCacher(network string, address string, maxActive int, maxIdle int, idleT
 	return &Cacher{
 		redisPool: redisPool,
 		expires:   expires,
-		name:      "redis",
+		info:      "redis",
 	}
 }
 
@@ -81,14 +81,14 @@ func (cacher *Cacher) KeyPrefix() string {
 	return cacher.keyPrefix
 }
 
-// SetName --
-func (cacher *Cacher) SetName(name string) {
-	cacher.name = name
+// SetInfo --
+func (cacher *Cacher) SetInfo(info string) {
+	cacher.info = info
 }
 
-// Name --
-func (cacher *Cacher) Name() string {
-	return cacher.name
+// Info --
+func (cacher *Cacher) Info() string {
+	return cacher.info
 }
 
 // SetEx --

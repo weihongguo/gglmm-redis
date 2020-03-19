@@ -13,7 +13,6 @@ import (
 type MessageQueue struct {
 	redisPool *redis.Pool
 	channel   string
-	name      string
 }
 
 // NewMessageQueueConfig --
@@ -39,31 +38,15 @@ func NewMessageQueueConfig(config ConfigMessageQueue, channel string) *MessageQu
 // NewMessageQueue --
 func NewMessageQueue(network string, address string, maxActive int, maxIdle int, idleTimeout time.Duration, channel string) *MessageQueue {
 	redisPool := NewRedisPool(network, address, maxActive, maxIdle, idleTimeout)
-
-	if err := Ping(redisPool); err != nil {
-		log.Fatal(err)
-	}
-
 	return &MessageQueue{
 		redisPool: redisPool,
 		channel:   channel,
-		name:      "redis",
 	}
 }
 
 // Close --
 func (mq *MessageQueue) Close() {
 	mq.redisPool.Close()
-}
-
-// SetName --
-func (mq *MessageQueue) SetName(name string) {
-	mq.name = name
-}
-
-// Name --
-func (mq *MessageQueue) Name() string {
-	return mq.name
 }
 
 // Push --

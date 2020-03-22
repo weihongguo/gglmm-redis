@@ -4,6 +4,8 @@ import "testing"
 
 func TestCounter(t *testing.T) {
 	counter := NewCounter("tcp", "127.0.0.1:6379", 5, 10, 3, "counter-test")
+	defer counter.Del()
+	defer counter.Close()
 
 	oldValue, err := counter.Zero()
 	if err != nil {
@@ -11,7 +13,7 @@ func TestCounter(t *testing.T) {
 	}
 	t.Log(oldValue)
 
-	value, err := counter.Increase()
+	value, err := counter.Incr()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -19,7 +21,7 @@ func TestCounter(t *testing.T) {
 		t.Fatalf("value error: %d %d\n", value, 1)
 	}
 
-	value, err = counter.IncreaseBy(2)
+	value, err = counter.IncrBy(2)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,7 +29,7 @@ func TestCounter(t *testing.T) {
 		t.Fatalf("value error: %d %d\n", value, 3)
 	}
 
-	value, err = counter.DecreaseBy(2)
+	value, err = counter.DecrBy(2)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +37,7 @@ func TestCounter(t *testing.T) {
 		t.Fatalf("value error: %d %d\n", value, 1)
 	}
 
-	value, err = counter.Decrease()
+	value, err = counter.Decr()
 	if err != nil {
 		t.Fatal(err)
 	}

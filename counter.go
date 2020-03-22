@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -10,8 +11,9 @@ import (
 
 // Counter --
 type Counter struct {
-	redisPool *redis.Pool
-	name      string
+	pool     *redis.Pool
+	name     string
+	selfPool bool
 }
 
 // NewCounterConfig --
@@ -36,33 +38,67 @@ func NewCounterConfig(config ConfigCounter, name string) *Counter {
 
 // NewCounter --
 func NewCounter(network string, address string, maxActive int, maxIdle int, idleTimeout time.Duration, name string) *Counter {
-	redisPool := NewRedisPool(network, address, maxActive, maxIdle, idleTimeout)
-	return &Counter{
-		redisPool: redisPool,
-		name:      name,
+	pool := NewPool(network, address, maxActive, maxIdle, idleTimeout)
+	if name == "" {
+		return nil
 	}
+	return &Counter{
+		pool:     pool,
+		name:     name,
+		selfPool: true,
+	}
+}
+
+// NewCounterPool --
+func NewCounterPool(pool *redis.Pool, name string) *Counter {
+	if name == "" {
+		return nil
+	}
+	return &Counter{
+		pool:     pool,
+		name:     name,
+		selfPool: false,
+	}
+}
+
+// Close --
+func (counter *Counter) Close() {
+	if counter.selfPool {
+		counter.pool.Close()
+	}
+}
+
+// Del --
+func (counter *Counter) Del() (int, error) {
+	conn := counter.pool.Get()
+	if conn == nil {
+		return 0, ErrConn
+	}
+	defer conn.Close()
+
+	return redis.Int(conn.Do("DEL", counter.name))
 }
 
 // Get --
 func (counter *Counter) Get() (int, error) {
-	redisConn := counter.redisPool.Get()
-	if redisConn == nil {
+	conn := counter.pool.Get()
+	if conn == nil {
 		return 0, ErrConn
 	}
-	defer redisConn.Close()
+	defer conn.Close()
 
-	return redis.Int(redisConn.Do("GET", counter.name))
+	return redis.Int(conn.Do("GET", counter.name))
 }
 
 // Set --
 func (counter *Counter) Set(value int) (int, error) {
-	redisConn := counter.redisPool.Get()
-	if redisConn == nil {
+	conn := counter.pool.Get()
+	if conn == nil {
 		return 0, ErrConn
 	}
-	defer redisConn.Close()
+	defer conn.Close()
 
-	oldValue, err := redis.Int(redisConn.Do("GET", counter.name))
+	oldValue, err := redis.Int(conn.Do("GET", counter.name))
 	if err != nil {
 		if err.Error() == "redigo: nil returned" {
 			oldValue = 0
@@ -71,8 +107,15 @@ func (counter *Counter) Set(value int) (int, error) {
 		}
 	}
 
-	_, err = redisConn.Do("SET", counter.name, value)
-	return oldValue, err
+	reply, err := redis.String(conn.Do("SET", counter.name, value))
+	if err != nil {
+		return 0, err
+	}
+	if reply != "OK" {
+		return 0, errors.New("not ok")
+	}
+
+	return oldValue, nil
 }
 
 // Zero --
@@ -80,46 +123,46 @@ func (counter *Counter) Zero() (int, error) {
 	return counter.Set(0)
 }
 
-// Increase --
-func (counter *Counter) Increase() (int, error) {
-	redisConn := counter.redisPool.Get()
-	if redisConn == nil {
+// Incr --
+func (counter *Counter) Incr() (int, error) {
+	conn := counter.pool.Get()
+	if conn == nil {
 		return 0, ErrConn
 	}
-	defer redisConn.Close()
+	defer conn.Close()
 
-	return redis.Int(redisConn.Do("INCR", counter.name))
+	return redis.Int(conn.Do("INCR", counter.name))
 }
 
-// Decrease --
-func (counter *Counter) Decrease() (int, error) {
-	redisConn := counter.redisPool.Get()
-	if redisConn == nil {
+// Decr --
+func (counter *Counter) Decr() (int, error) {
+	conn := counter.pool.Get()
+	if conn == nil {
 		return 0, ErrConn
 	}
-	defer redisConn.Close()
+	defer conn.Close()
 
-	return redis.Int(redisConn.Do("DECR", counter.name))
+	return redis.Int(conn.Do("DECR", counter.name))
 }
 
-// IncreaseBy --
-func (counter *Counter) IncreaseBy(diff int) (int, error) {
-	redisConn := counter.redisPool.Get()
-	if redisConn == nil {
+// IncrBy --
+func (counter *Counter) IncrBy(diff int) (int, error) {
+	conn := counter.pool.Get()
+	if conn == nil {
 		return 0, ErrConn
 	}
-	defer redisConn.Close()
+	defer conn.Close()
 
-	return redis.Int(redisConn.Do("INCRBY", counter.name, diff))
+	return redis.Int(conn.Do("INCRBY", counter.name, diff))
 }
 
-// DecreaseBy --
-func (counter *Counter) DecreaseBy(diff int) (int, error) {
-	redisConn := counter.redisPool.Get()
-	if redisConn == nil {
+// DecrBy --
+func (counter *Counter) DecrBy(diff int) (int, error) {
+	conn := counter.pool.Get()
+	if conn == nil {
 		return 0, ErrConn
 	}
-	defer redisConn.Close()
+	defer conn.Close()
 
-	return redis.Int(redisConn.Do("DECRBY", counter.name, diff))
+	return redis.Int(conn.Do("DECRBY", counter.name, diff))
 }

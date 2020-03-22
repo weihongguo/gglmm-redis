@@ -2,6 +2,7 @@ package redis
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"reflect"
@@ -12,10 +13,10 @@ import (
 
 // Cacher Redis缓存 实现了Cacher接口
 type Cacher struct {
-	redisPool *redis.Pool
+	pool      *redis.Pool
 	expires   int
 	keyPrefix string
-	info      string
+	selfPool  bool
 }
 
 // NewCacherConfig --
@@ -40,22 +41,35 @@ func NewCacherConfig(config ConfigCacher) *Cacher {
 
 // NewCacher --
 func NewCacher(network string, address string, maxActive int, maxIdle int, idleTimeout time.Duration, expires int) *Cacher {
-	redisPool := NewRedisPool(network, address, maxActive, maxIdle, idleTimeout)
+	pool := NewPool(network, address, maxActive, maxIdle, idleTimeout)
 
 	if expires < 10 {
 		expires = 10
 	}
-
 	return &Cacher{
-		redisPool: redisPool,
-		expires:   expires,
-		info:      "redis",
+		pool:     pool,
+		expires:  expires,
+		selfPool: true,
+	}
+}
+
+// NewCacherPool --
+func NewCacherPool(pool *redis.Pool, expires int) *Cacher {
+	if expires < 10 {
+		expires = 10
+	}
+	return &Cacher{
+		pool:     pool,
+		expires:  expires,
+		selfPool: false,
 	}
 }
 
 // Close --
 func (cacher *Cacher) Close() {
-	cacher.redisPool.Close()
+	if cacher.selfPool {
+		cacher.pool.Close()
+	}
 }
 
 // SetExpires --
@@ -81,26 +95,17 @@ func (cacher *Cacher) KeyPrefix() string {
 	return cacher.keyPrefix
 }
 
-// SetInfo --
-func (cacher *Cacher) SetInfo(info string) {
-	cacher.info = info
-}
-
-// Info --
-func (cacher *Cacher) Info() string {
-	return cacher.info
-}
-
 // SetEx --
 func (cacher *Cacher) SetEx(key string, value interface{}, ex int) error {
-	redisConn := cacher.redisPool.Get()
-	if redisConn == nil {
+	conn := cacher.pool.Get()
+	if conn == nil {
 		return ErrConn
 	}
-	defer redisConn.Close()
+	defer conn.Close()
 
 	key = cacher.KeyPrefix() + key
 
+	var reply interface{}
 	var err error
 	switch reflect.TypeOf(value).Kind() {
 	case reflect.Struct, reflect.Slice, reflect.Map, reflect.Ptr:
@@ -108,11 +113,18 @@ func (cacher *Cacher) SetEx(key string, value interface{}, ex int) error {
 		if err != nil {
 			return err
 		}
-		_, err = redisConn.Do("SET", key, jsonValue, "EX", ex)
+		reply, err = conn.Do("SET", key, jsonValue, "EX", ex)
 	default:
-		_, err = redisConn.Do("SET", key, value, "EX", ex)
+		reply, err = conn.Do("SET", key, value, "EX", ex)
 	}
-	return err
+	ok, err := redis.String(reply, err)
+	if err != nil {
+		return err
+	}
+	if ok != "OK" {
+		return errors.New("not ok")
+	}
+	return nil
 }
 
 // Set --
@@ -122,26 +134,26 @@ func (cacher *Cacher) Set(key string, value interface{}) error {
 
 // Get --
 func (cacher *Cacher) Get(key string) (interface{}, error) {
-	redisConn := cacher.redisPool.Get()
-	if redisConn == nil {
+	conn := cacher.pool.Get()
+	if conn == nil {
 		return nil, ErrConn
 	}
-	defer redisConn.Close()
+	defer conn.Close()
 
 	key = cacher.KeyPrefix() + key
-	return redisConn.Do("GET", key)
+	return conn.Do("GET", key)
 }
 
 // Del --
-func (cacher *Cacher) Del(key string) error {
-	redisConn := cacher.redisPool.Get()
-	if redisConn == nil {
-		return ErrConn
+func (cacher *Cacher) Del(key string) (int, error) {
+	conn := cacher.pool.Get()
+	if conn == nil {
+		return 0, ErrConn
 	}
-	defer redisConn.Close()
+	defer conn.Close()
 
-	_, err := redisConn.Do("DEL", key)
-	return err
+	key = cacher.KeyPrefix() + key
+	return redis.Int(conn.Do("DEL", key))
 }
 
 // GetInt --

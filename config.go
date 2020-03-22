@@ -41,12 +41,22 @@ type ConfigCacher struct {
 	Expires int
 }
 
-// ConfigMessageQueue --
-type ConfigMessageQueue struct {
+// ConfigCounter --
+type ConfigCounter struct {
 	ConfigRedis
 }
 
-// ConfigCounter --
-type ConfigCounter struct {
+// ConfigToper --
+type ConfigToper struct {
+	ConfigRedis
+}
+
+// ConfigHoter --
+type ConfigHoter struct {
+	ConfigRedis
+}
+
+// ConfigMessageQueue --
+type ConfigMessageQueue struct {
 	ConfigRedis
 }

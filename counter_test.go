@@ -4,8 +4,8 @@ import "testing"
 
 func TestCounter(t *testing.T) {
 	counter := NewCounter("tcp", "127.0.0.1:6379", 5, 10, 3, "counter-test")
-	defer counter.Del()
 	defer counter.Close()
+	defer counter.Del()
 
 	oldValue, err := counter.Zero()
 	if err != nil {

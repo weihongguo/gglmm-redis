@@ -4,8 +4,8 @@ import "testing"
 
 func TestHoter(t *testing.T) {
 	hoter := NewHoter("tcp", "127.0.0.1:6379", 5, 10, 3, "hoter-test")
-	defer hoter.Del()
 	defer hoter.Close()
+	defer hoter.Del()
 
 	var i int64 = 0
 	for i < 10 {

@@ -20,11 +20,9 @@ func NewPool(network string, address string, maxActive int, maxIdle int, idleTim
 			return redis.Dial(network, address)
 		},
 	}
-
 	if err := Ping(pool); err != nil {
 		log.Fatal(err)
 	}
-
 	return pool
 }
 

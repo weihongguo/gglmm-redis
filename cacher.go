@@ -156,6 +156,22 @@ func (cacher *Cacher) Del(key string) (int, error) {
 	return redis.Int(conn.Do("DEL", key))
 }
 
+// DelPattern --
+func (cacher *Cacher) DelPattern(pattern string) (int, error) {
+	conn := cacher.pool.Get()
+	if conn == nil {
+		return 0, ErrConn
+	}
+	defer conn.Close()
+
+	pattern = cacher.KeyPrefix() + pattern
+	keys, err := redis.Values(conn.Do("KEYS", pattern))
+	if err != nil {
+		return 0, err
+	}
+	return redis.Int(conn.Do("DEL", keys...))
+}
+
 // GetInt --
 func (cacher *Cacher) GetInt(key string) (int, error) {
 	return redis.Int(cacher.Get(key))

@@ -2,7 +2,6 @@ package redis
 
 import (
 	"errors"
-	"log"
 	"strings"
 )
 
@@ -31,7 +30,6 @@ func (config ConfigRedis) Check() bool {
 	if config.MaxActive <= 0 || config.MaxIdel <= 0 || config.IdelTimeout <= 0 {
 		return false
 	}
-	log.Println("config redis check valid")
 	return true
 }
 

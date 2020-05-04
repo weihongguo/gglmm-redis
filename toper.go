@@ -75,7 +75,7 @@ func (toper *Toper) Close() {
 func (toper *Toper) Del() error {
 	conn := toper.pool.Get()
 	if conn == nil {
-		return ErrConn
+		return ErrConnect
 	}
 	defer conn.Close()
 
@@ -87,7 +87,7 @@ func (toper *Toper) Del() error {
 func (toper *Toper) Push(id int64) error {
 	conn := toper.pool.Get()
 	if conn == nil {
-		return ErrConn
+		return ErrConnect
 	}
 	defer conn.Close()
 
@@ -103,7 +103,7 @@ func (toper *Toper) Push(id int64) error {
 func (toper *Toper) Pop() (int64, error) {
 	conn := toper.pool.Get()
 	if conn == nil {
-		return 0, ErrConn
+		return 0, ErrConnect
 	}
 	defer conn.Close()
 
@@ -114,7 +114,7 @@ func (toper *Toper) Pop() (int64, error) {
 func (toper *Toper) Range() ([]int64, error) {
 	conn := toper.pool.Get()
 	if conn == nil {
-		return nil, ErrConn
+		return nil, ErrConnect
 	}
 	defer conn.Close()
 

@@ -1,7 +1,6 @@
 package redis
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -71,12 +70,12 @@ func (mq *MessageQueue) Close() {
 // Push --
 func (mq *MessageQueue) Push(message []byte) error {
 	if message == nil || len(message) == 0 {
-		return errors.New("channel is empty")
+		return ErrChannelEmpty
 	}
 
 	conn := mq.pool.Get()
 	if conn == nil {
-		return ErrConn
+		return ErrConnect
 	}
 	defer conn.Close()
 
@@ -88,7 +87,7 @@ func (mq *MessageQueue) Push(message []byte) error {
 func (mq *MessageQueue) BPop(handler func(message []byte, err error), timeout int) (chan<- interface{}, error) {
 	conn := mq.pool.Get()
 	if conn == nil {
-		return nil, ErrConn
+		return nil, ErrConnect
 	}
 
 	if timeout < 10 {
@@ -112,7 +111,7 @@ func (mq *MessageQueue) BPop(handler func(message []byte, err error), timeout in
 					handler(nil, err)
 				} else {
 					if len(messages) != 2 && string(messages[0]) != mq.channel {
-						handler(nil, errors.New("channel error"))
+						handler(nil, ErrChannel)
 					} else {
 						handler(messages[1], nil)
 					}

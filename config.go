@@ -6,8 +6,16 @@ import (
 )
 
 var (
-	// ErrConn --
-	ErrConn = errors.New("连接错误")
+	// ErrConnect --
+	ErrConnect = errors.New("连接错误")
+	// ErrPing --
+	ErrPing = errors.New("连接测试错误")
+	// ErrReply --
+	ErrReply = errors.New("回复错误")
+	// ErrChannel --
+	ErrChannel = errors.New("通道错误")
+	// ErrChannelEmpty --
+	ErrChannelEmpty = errors.New("通道为空")
 )
 
 // ConfigRedis --

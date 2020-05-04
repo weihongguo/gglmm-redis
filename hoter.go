@@ -72,7 +72,7 @@ func (hoter *Hoter) Close() {
 func (hoter *Hoter) Del() (int, error) {
 	conn := hoter.pool.Get()
 	if conn == nil {
-		return 0, ErrConn
+		return 0, ErrConnect
 	}
 	defer conn.Close()
 
@@ -83,7 +83,7 @@ func (hoter *Hoter) Del() (int, error) {
 func (hoter *Hoter) Add(score, id int64) (int, error) {
 	conn := hoter.pool.Get()
 	if conn == nil {
-		return 0, ErrConn
+		return 0, ErrConnect
 	}
 	defer conn.Close()
 
@@ -94,7 +94,7 @@ func (hoter *Hoter) Add(score, id int64) (int, error) {
 func (hoter *Hoter) Card() (int, error) {
 	conn := hoter.pool.Get()
 	if conn == nil {
-		return 0, ErrConn
+		return 0, ErrConnect
 	}
 	defer conn.Close()
 
@@ -105,7 +105,7 @@ func (hoter *Hoter) Card() (int, error) {
 func (hoter *Hoter) Count(min, max int64) (int, error) {
 	conn := hoter.pool.Get()
 	if conn == nil {
-		return 0, ErrConn
+		return 0, ErrConnect
 	}
 	defer conn.Close()
 
@@ -116,7 +116,7 @@ func (hoter *Hoter) Count(min, max int64) (int, error) {
 func (hoter *Hoter) Rem(id int64) (int, error) {
 	conn := hoter.pool.Get()
 	if conn == nil {
-		return 0, ErrConn
+		return 0, ErrConnect
 	}
 	defer conn.Close()
 
@@ -127,7 +127,7 @@ func (hoter *Hoter) Rem(id int64) (int, error) {
 func (hoter *Hoter) RemRangeByScore(min, max int64) (int, error) {
 	conn := hoter.pool.Get()
 	if conn == nil {
-		return 0, ErrConn
+		return 0, ErrConnect
 	}
 	defer conn.Close()
 
@@ -138,7 +138,7 @@ func (hoter *Hoter) RemRangeByScore(min, max int64) (int, error) {
 func (hoter *Hoter) RangeByScore(max int64) ([]int64, []int64, error) {
 	conn := hoter.pool.Get()
 	if conn == nil {
-		return nil, nil, ErrConn
+		return nil, nil, ErrConnect
 	}
 	defer conn.Close()
 
@@ -162,7 +162,7 @@ func (hoter *Hoter) RangeByScore(max int64) ([]int64, []int64, error) {
 func (hoter *Hoter) RevRangeByScore(min int64) ([]int64, []int64, error) {
 	conn := hoter.pool.Get()
 	if conn == nil {
-		return nil, nil, ErrConn
+		return nil, nil, ErrConnect
 	}
 	defer conn.Close()
 

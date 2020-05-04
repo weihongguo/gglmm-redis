@@ -2,7 +2,6 @@ package redis
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"reflect"
@@ -42,7 +41,6 @@ func NewCacherConfig(config ConfigCacher) *Cacher {
 // NewCacher --
 func NewCacher(network string, address string, maxActive int, maxIdle int, idleTimeout time.Duration, expires int) *Cacher {
 	pool := NewPool(network, address, maxActive, maxIdle, idleTimeout)
-
 	if expires < 10 {
 		expires = 10
 	}
@@ -99,7 +97,7 @@ func (cacher *Cacher) KeyPrefix() string {
 func (cacher *Cacher) SetEx(key string, value interface{}, ex int) error {
 	conn := cacher.pool.Get()
 	if conn == nil {
-		return ErrConn
+		return ErrConnect
 	}
 	defer conn.Close()
 
@@ -122,7 +120,7 @@ func (cacher *Cacher) SetEx(key string, value interface{}, ex int) error {
 		return err
 	}
 	if ok != "OK" {
-		return errors.New("not ok")
+		return ErrReply
 	}
 	return nil
 }
@@ -136,7 +134,7 @@ func (cacher *Cacher) Set(key string, value interface{}) error {
 func (cacher *Cacher) Get(key string) (interface{}, error) {
 	conn := cacher.pool.Get()
 	if conn == nil {
-		return nil, ErrConn
+		return nil, ErrConnect
 	}
 	defer conn.Close()
 
@@ -148,7 +146,7 @@ func (cacher *Cacher) Get(key string) (interface{}, error) {
 func (cacher *Cacher) Del(key string) (int, error) {
 	conn := cacher.pool.Get()
 	if conn == nil {
-		return 0, ErrConn
+		return 0, ErrConnect
 	}
 	defer conn.Close()
 
@@ -160,7 +158,7 @@ func (cacher *Cacher) Del(key string) (int, error) {
 func (cacher *Cacher) DelPattern(pattern string) (int, error) {
 	conn := cacher.pool.Get()
 	if conn == nil {
-		return 0, ErrConn
+		return 0, ErrConnect
 	}
 	defer conn.Close()
 

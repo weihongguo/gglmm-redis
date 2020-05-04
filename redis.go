@@ -1,7 +1,6 @@
 package redis
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -30,7 +29,7 @@ func NewPool(network string, address string, maxActive int, maxIdle int, idleTim
 func Ping(pool *redis.Pool) error {
 	conn := pool.Get()
 	if conn == nil {
-		return ErrConn
+		return ErrConnect
 	}
 	defer conn.Close()
 
@@ -43,7 +42,7 @@ func Ping(pool *redis.Pool) error {
 		return err
 	}
 	if pong != "PONG" {
-		return errors.New("PING NOT PONG")
+		return ErrPing
 	}
 	return nil
 }

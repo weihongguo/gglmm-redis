@@ -1,7 +1,6 @@
 package redis
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -72,7 +71,7 @@ func (counter *Counter) Close() {
 func (counter *Counter) Del() (int, error) {
 	conn := counter.pool.Get()
 	if conn == nil {
-		return 0, ErrConn
+		return 0, ErrConnect
 	}
 	defer conn.Close()
 
@@ -83,7 +82,7 @@ func (counter *Counter) Del() (int, error) {
 func (counter *Counter) Get() (int, error) {
 	conn := counter.pool.Get()
 	if conn == nil {
-		return 0, ErrConn
+		return 0, ErrConnect
 	}
 	defer conn.Close()
 
@@ -94,7 +93,7 @@ func (counter *Counter) Get() (int, error) {
 func (counter *Counter) Set(value int) (int, error) {
 	conn := counter.pool.Get()
 	if conn == nil {
-		return 0, ErrConn
+		return 0, ErrConnect
 	}
 	defer conn.Close()
 
@@ -112,7 +111,7 @@ func (counter *Counter) Set(value int) (int, error) {
 		return 0, err
 	}
 	if reply != "OK" {
-		return 0, errors.New("not ok")
+		return 0, ErrReply
 	}
 
 	return oldValue, nil
@@ -127,7 +126,7 @@ func (counter *Counter) Zero() (int, error) {
 func (counter *Counter) Incr() (int, error) {
 	conn := counter.pool.Get()
 	if conn == nil {
-		return 0, ErrConn
+		return 0, ErrConnect
 	}
 	defer conn.Close()
 
@@ -138,7 +137,7 @@ func (counter *Counter) Incr() (int, error) {
 func (counter *Counter) Decr() (int, error) {
 	conn := counter.pool.Get()
 	if conn == nil {
-		return 0, ErrConn
+		return 0, ErrConnect
 	}
 	defer conn.Close()
 
@@ -149,7 +148,7 @@ func (counter *Counter) Decr() (int, error) {
 func (counter *Counter) IncrBy(diff int) (int, error) {
 	conn := counter.pool.Get()
 	if conn == nil {
-		return 0, ErrConn
+		return 0, ErrConnect
 	}
 	defer conn.Close()
 
@@ -160,7 +159,7 @@ func (counter *Counter) IncrBy(diff int) (int, error) {
 func (counter *Counter) DecrBy(diff int) (int, error) {
 	conn := counter.pool.Get()
 	if conn == nil {
-		return 0, ErrConn
+		return 0, ErrConnect
 	}
 	defer conn.Close()
 

@@ -31,3 +31,24 @@ func NewCounter(network string, address string, maxActive int, maxIdle int, idle
 func NewCounterPool(pool *redis.Pool, name string) *Counter
 func (counter *Counter) Close()
 ```
+## 最热门
+```golang
+func NewHoterConfig(config ConfigHoter, name string) *Hoter
+func NewHoter(network string, address string, maxActive int, maxIdle int, idleTimeout time.Duration, name string) *Hoter
+func NewHoterPool(pool *redis.Pool, name string) *Hoter
+func (hoter *Hoter) Close()
+```
+## 最新
+```golang
+func NewToperConfig(config ConfigToper, name string, limit int) *Toper
+func NewToper(network string, address string, maxActive int, maxIdle int, idleTimeout time.Duration, name string, limit int) *Toper
+func NewToperPool(pool *redis.Pool, name string, limit int) *Toper
+func (toper *Toper) Close()
+```
+## 消息对列
+```golang
+func NewMessageQueueConfig(config ConfigMessageQueue, channel string) *MessageQueue
+func NewMessageQueue(network string, address string, maxActive int, maxIdle int, idleTimeout time.Duration, channel string) *MessageQueue
+func NewMessageQueuePool(pool *redis.Pool, channel string) *MessageQueue
+func (mq *MessageQueue) Close()
+```

@@ -17,7 +17,7 @@ type Hoter struct {
 }
 
 // NewHoterConfig --
-func NewHoterConfig(config ConfigCounter, name string) *Hoter {
+func NewHoterConfig(config ConfigHoter, name string) *Hoter {
 	if !config.Check() {
 		log.Printf("%+v\n", config)
 		log.Fatal("ConfigCounter invalid")

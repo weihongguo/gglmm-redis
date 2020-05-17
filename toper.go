@@ -17,7 +17,7 @@ type Toper struct {
 }
 
 // NewToperConfig --
-func NewToperConfig(config ConfigCounter, name string, limit int) *Toper {
+func NewToperConfig(config ConfigToper, name string, limit int) *Toper {
 	if !config.Check() {
 		log.Printf("%+v\n", config)
 		log.Fatal("ConfigCounter invalid")

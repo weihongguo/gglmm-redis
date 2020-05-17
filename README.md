@@ -17,3 +17,17 @@ func (factory *Factory) NewToper(name string, limit int) *Toper
 func (factory *Factory) NewHoter(name string) *Hoter
 func (factory *Factory) NewMessageQueue(channel string) *MessageQueue
 ```
+## 缓存 -- 实现了gglmm的Cacher接口
+```golang
+func NewCacherConfig(config ConfigCacher) *Cacher
+func NewCacher(network string, address string, maxActive int, maxIdle int, idleTimeout time.Duration, expires int) *Cacher
+func NewCacherPool(pool *redis.Pool, expires int) *Cacher
+func (cacher *Cacher) Close()
+```
+## 记数器
+```golang
+func NewCounterConfig(config ConfigCounter, name string) *Counter
+func NewCounter(network string, address string, maxActive int, maxIdle int, idleTimeout time.Duration, name string) *Counter
+func NewCounterPool(pool *redis.Pool, name string) *Counter
+func (counter *Counter) Close()
+```

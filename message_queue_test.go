@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var stop chan<- interface{}
+var stopChan chan<- interface{}
 
 func TestMessageQueue(t *testing.T) {
 	mq := NewMessageQueue("tcp", "127.0.0.1:6379", 5, 10, 3, "message-queue-test")
@@ -16,26 +16,26 @@ func TestMessageQueue(t *testing.T) {
 	sendCount := 5
 
 	for i := 0; i < sendCount; i++ {
-		mq.Push([]byte(fmt.Sprintf("%dtest", i)))
+		mq.Publish([]byte(fmt.Sprintf("%dtest", i)))
 	}
 
-	go handlerMessage(mq, 5, "handler1")
-	go handlerMessage(mq, 5, "handler2")
+	go handleMessage(mq, 5, "handler1")
+	go handleMessage(mq, 5, "handler2")
 
 	for i := 0; i < sendCount; i++ {
 		t := time.NewTimer(time.Second * 1)
 		select {
 		case <-t.C:
-			mq.Push([]byte(fmt.Sprintf("test%d", i)))
+			mq.Publish([]byte(fmt.Sprintf("test%d", i)))
 		}
 	}
 
-	stop <- 1
+	stopChan <- 1
 }
 
-func handlerMessage(mq *MessageQueue, timeout int, info string) {
+func handleMessage(mq *MessageQueue, timeout int, info string) {
 	var err error
-	stop, err = mq.BPop(func(message []byte, err error) {
+	stopChan, err = mq.Subscribe(func(message []byte, err error) {
 		if err != nil {
 			log.Println(err)
 			return

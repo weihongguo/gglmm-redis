@@ -37,10 +37,10 @@ func NewMessageQueueConfig(config ConfigMessageQueue, channel string) *MessageQu
 
 // NewMessageQueue --
 func NewMessageQueue(network string, address string, maxActive int, maxIdle int, idleTimeout time.Duration, channel string) *MessageQueue {
-	pool := NewPool(network, address, maxActive, maxIdle, idleTimeout)
 	if channel == "" {
 		return nil
 	}
+	pool := NewPool(network, address, maxActive, maxIdle, idleTimeout)
 	return &MessageQueue{
 		pool:     pool,
 		channel:  channel,
@@ -67,8 +67,8 @@ func (mq *MessageQueue) Close() {
 	}
 }
 
-// Push --
-func (mq *MessageQueue) Push(message []byte) error {
+// Publish --
+func (mq *MessageQueue) Publish(message []byte) error {
 	if message == nil || len(message) == 0 {
 		return ErrChannelEmpty
 	}
@@ -83,8 +83,8 @@ func (mq *MessageQueue) Push(message []byte) error {
 	return err
 }
 
-// BPop --
-func (mq *MessageQueue) BPop(handler func(message []byte, err error), timeout int) (chan<- interface{}, error) {
+// Subscribe --
+func (mq *MessageQueue) Subscribe(handler func(message []byte, err error), timeout int) (chan<- interface{}, error) {
 	conn := mq.pool.Get()
 	if conn == nil {
 		return nil, ErrConnect

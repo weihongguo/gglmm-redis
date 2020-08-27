@@ -20,10 +20,6 @@ type Cacher struct {
 
 // NewCacherConfig --
 func NewCacherConfig(config ConfigCacher) *Cacher {
-	if !config.Check() {
-		log.Printf("%+v\n", config)
-		log.Fatal("ConfigCacher invalid")
-	}
 	idelTimeout, err := time.ParseDuration(fmt.Sprintf("%ds", config.IdelTimeout))
 	if err != nil {
 		log.Fatal(err)
